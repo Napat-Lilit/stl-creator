@@ -10,6 +10,7 @@
 
 #include "vec3.h"
 #include "triangle.h"
+#include "microstl.h" // This one is from https://github.com/cry-inc/microstl/blob/master/include/microstl.h -> Bring in to make this program also support binary stl
 
 class Mesh {
 	public:
@@ -210,32 +211,73 @@ inline Mesh create_cube ()
 
 //STLファイルの読み込み
 //(読み込みの成功判定は，ファイル読み込みができたかでしか判定していない．中身は関係ない．)
-inline Mesh stl_read(const std::string& filename) {
+// inline Mesh stl_read(const std::string& filename) {
+// 	Mesh m;
+
+// 	std::ifstream file(filename);
+// 	if ( file.fail() ) {
+// 		std::cerr << "Failed to open " << filename << "." << std::endl;
+// 		return m;
+// 	}
+
+// 	std::string line, buf;
+// 	double px, py, pz;
+// 	Vec3 v[3];
+// 	int i=0;
+// 	while ( getline(file, line) ) {
+// 		if( line.find("vertex") != std::string::npos ) {
+// 			std::istringstream s(line);
+// 			s >> buf >> px >> py >> pz;
+// 			v[i] = {px, py, pz};
+// 			if(++i>=3) {
+// 				i=0;
+// 				Triangle t(v[0], v[1], v[2]);
+// 				m.add(t);
+// 			}
+// 			continue;
+// 		}
+// 	}
+// 	return m;
+// }
+
+// From the look of it, there is no way this also support binary stl -> Write one yourself then
+Mesh stl_read(const std::string& filename) {
+	// Define path to input file
+	std::filesystem::path filePath(filename);
+	
 	Mesh m;
-
-	std::ifstream file(filename);
-	if ( file.fail() ) {
-		std::cerr << "Failed to open " << filename << "." << std::endl;
-		return m;
-	}
-
-	std::string line, buf;
-	double px, py, pz;
 	Vec3 v[3];
-	int i=0;
-	while ( getline(file, line) ) {
-		if( line.find("vertex") != std::string::npos ) {
-			std::istringstream s(line);
-			s >> buf >> px >> py >> pz;
-			v[i] = {px, py, pz};
-			if(++i>=3) {
-				i=0;
-				Triangle t(v[0], v[1], v[2]);
-				m.add(t);
-			}
-			continue;
-		}
+
+	// Use included handler that creates a simple mesh data structure
+	microstl::MeshReaderHandler meshHandler;
+
+	// Start parsing the file and let the data go into the mesh handler
+	microstl::Result result = microstl::Reader::readStlFile(filePath, meshHandler);
+
+	// Check if the parsing was successful or if there was an error
+	if (result != microstl::Result::Success)
+	{
+		std::cerr << "Error: " << microstl::getResultString(result) << std::endl;
+		throw std::invalid_argument("MicroSTL failed to read the provided stl file");
 	}
+
+	// Now the extracted mesh data can be accessed
+	const microstl::Mesh& mesh = meshHandler.mesh;
+
+	// Loop over all triangles a.k.a facets
+	for (const microstl::Facet& facet : mesh.facets)
+	{
+		v[0] = {facet.v1.x, facet.v1.y, facet.v1.z};
+		v[1] = {facet.v2.x, facet.v2.y, facet.v2.z};
+		v[2] = {facet.v3.x, facet.v3.y, facet.v3.z};
+		Triangle t(v[0], v[1], v[2]);
+		m.add(t);
+	}
+
+	// The handler also collected some other information
+	std::cout << "Mesh Name: " << meshHandler.name << std::endl;
+	std::cout << "ASCII: " << (meshHandler.ascii ? "true" : "false") << std::endl;
+
 	return m;
 }
 

@@ -1,4 +1,7 @@
 # STL creator
+
+This is a slightly modified version of STL creator project from [here](https://github.com/elerac/stl-creator?tab=readme-ov-file).
+
 create and edit STL files in C++ (Version of C++ is 11 or higher.)
 
 You can see how to use STL-creator from [here](https://www.slideshare.net/secret/LV0MNJfI1xszLl).
@@ -37,18 +40,3 @@ int main() {
   mesh_dst.stl_write("example.stl");
 }
 ```
-
-## duplicate.cpp
-![duplicate_result](https://github.com/elerac/stl-creator/blob/master/images/duplicate_result.jpg)
-
-## flip.cpp
-![flip_result](https://github.com/elerac/stl-creator/blob/master/images/flip_result.jpg)
-
-## heightfield.cpp
-![heightfield_result](https://github.com/elerac/stl-creator/blob/master/images/heightfield_result.jpg)
-
-## stamp.cpp
-![stamp_result](https://github.com/elerac/stl-creator/blob/master/images/stamp_result.jpg)
-
-## function.cpp
-![function_result](https://github.com/elerac/stl-creator/blob/master/images/function_result.jpg)
