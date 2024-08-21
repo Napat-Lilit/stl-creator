@@ -10,7 +10,8 @@
 
 #include "vec3.h"
 #include "triangle.h"
-#include "microstl.h" // This one is from https://github.com/cry-inc/microstl/blob/master/include/microstl.h -> Bring in to make this program also support binary stl
+// #include "microstl.h" // This one is from https://github.com/cry-inc/microstl/blob/master/include/microstl.h -> Bring in to make this program also support binary stl
+#include "stl_reader_sebastian.h"
 
 class Mesh {
 	public:
@@ -242,42 +243,21 @@ inline Mesh create_cube ()
 
 // From the look of it, there is no way this also support binary stl -> Write one yourself then
 Mesh stl_read(const std::string& filename) {
-	// Define path to input file
-	std::filesystem::path filePath(filename);
-	
 	Mesh m;
 	Vec3 v[3];
 
-	// Use included handler that creates a simple mesh data structure
-	microstl::MeshReaderHandler meshHandler;
+	stl_reader :: StlMesh <float, unsigned int> mesh (filename);
+	for(size_t itri = 0; itri < mesh.num_tris(); ++itri) {
+		const float* c0 = mesh.tri_corner_coords (itri, 0);
+		v[0] = {c0[0], c0[1], c0[2]};
+		const float* c1 = mesh.tri_corner_coords (itri, 1);
+		v[1] = {c1[0], c1[1], c1[2]};
+		const float* c2 = mesh.tri_corner_coords (itri, 2);
+		v[2] = {c2[0], c2[1], c2[2]};
 
-	// Start parsing the file and let the data go into the mesh handler
-	microstl::Result result = microstl::Reader::readStlFile(filePath, meshHandler);
-
-	// Check if the parsing was successful or if there was an error
-	if (result != microstl::Result::Success)
-	{
-		std::cerr << "Error: " << microstl::getResultString(result) << std::endl;
-		throw std::invalid_argument("MicroSTL failed to read the provided stl file");
-	}
-
-	// Now the extracted mesh data can be accessed
-	const microstl::Mesh& mesh = meshHandler.mesh;
-
-	// Loop over all triangles a.k.a facets
-	for (const microstl::Facet& facet : mesh.facets)
-	{
-		v[0] = {facet.v1.x, facet.v1.y, facet.v1.z};
-		v[1] = {facet.v2.x, facet.v2.y, facet.v2.z};
-		v[2] = {facet.v3.x, facet.v3.y, facet.v3.z};
 		Triangle t(v[0], v[1], v[2]);
 		m.add(t);
 	}
-
-	// The handler also collected some other information
-	std::cout << "Mesh Name: " << meshHandler.name << std::endl;
-	std::cout << "ASCII: " << (meshHandler.ascii ? "true" : "false") << std::endl;
-
 	return m;
 }
 

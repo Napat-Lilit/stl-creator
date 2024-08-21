@@ -21,7 +21,7 @@ std::string fixedLength(int value, int digits = DIGIT_COUNT) {
 
 int main() {
     Mesh mesh_src;
-	mesh_src = stl_read("./testModels/NewOda03.stl");
+	mesh_src = stl_read("./testModels/OdaContainer.stl");
 	
     for (size_t step = 0; step < STEPS_COUNT; step++)
     {
